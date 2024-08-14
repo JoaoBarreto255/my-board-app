@@ -1,9 +1,10 @@
 
 use core::option::Option;
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 use std::fmt::Debug;
 
 use crate::database::models::custom_types::Priority;
+use crate::database::models::group::{State, Board};
 
 pub enum DurationInput {
     Minutes(u32),
@@ -12,38 +13,38 @@ pub enum DurationInput {
 
 #[derive(Debug)]
 pub struct Task {
-    id: u64,
+    id: Option<u64>,
     name: Rc<String>,
     description: Option<Rc<String>>,
     duration: u32,
-    progress: f32,
+    progress: Option<f32>,
     priority: Priority,
-    state: Rc<String>,
-    task_group: u32,
+    state: Rc<State>,
+    board: Weak<Board>,
     started_at: Option<Rc<String>>,
     ended_at: Option<Rc<String>>
 }
 
 impl Task {
     pub fn new(
-        id: u64, name: Rc<String>, description: Option<Rc<String>>
-        , duration: u32, progress: f32, priority: Priority
-        , state: Rc<String>, task_group: u32
+        id: Option<u64>, name: Rc<String>, description: Option<Rc<String>>
+        , duration: u32, priority: Priority, state: Rc<State>
+        , board: Weak<Board>
     ) -> Task {
         return Task {
             id, name, description: description, duration
-            , progress, priority, state, task_group
+            , progress: None, priority, state, board
             , started_at: None, ended_at: None
         }
     }
 
     /// get id from [`Task`]
-    pub fn get_id(self) -> u64 {
-        return self.id;
+    pub fn get_id(self) -> Option<u64> {
+        self.id
     }
 
     /// Sets the id of this [`Task`].
-    pub fn set_id(&mut self, id: u64) -> &mut Task {
+    pub fn set_id(&mut self, id: Option<u64>) -> &mut Task {
         self.id = id;
 
         return self;
@@ -51,7 +52,7 @@ impl Task {
 
     /// get name from [`Task`]
     pub fn get_name(self) -> Rc<String> {
-        return self.name.clone();
+        self.name.clone()
     }
 
     /// Sets the name of this [`Task`].
@@ -63,15 +64,15 @@ impl Task {
 
     /// get description from [`Task`]
     pub fn get_description(self) -> Option<Rc<String>> {
-        return match self.description {
-            Option::Some(description) => Option::Some(description.clone()),
-            _ => Option::None,
+        return match &self.description {
+            Some(description) => Some(description.clone()),
+            _ => None,
         };
     }
 
     /// Sets the descriptio of this [`Task`].
     pub fn set_description(&mut self, description: String) -> &mut Task {
-        self.description = Option::Some(Rc::new(description));
+        self.description = Some(Rc::new(description));
 
         return self;
     }
@@ -100,12 +101,12 @@ impl Task {
     }
 
     /// obtains current [`Task`] progress.
-    pub fn get_progress(self) -> f32 {
-        return self.progress;
+    pub fn get_progress(self) -> Option<f32> {
+        self.progress
     }
 
     /// update current [`Task`] progress.
-    pub fn set_progress(&mut self, progress: f32) -> &mut Task {
+    pub fn set_progress(&mut self, progress: Option<f32>) -> &mut Task {
         self.progress = progress;
 
         return self;
@@ -124,63 +125,63 @@ impl Task {
     }
 
     /// obtains current [`Task`] state.
-    pub fn get_state(self) -> Rc<String> {
+    pub fn get_state(self) -> Rc<State> {
         return self.state.clone();
     }
 
     /// update current [`Task`] state.
-    pub fn set_state(&mut self, state: String) -> &mut Task {
-        self.state = Rc::new(state);
+    pub fn set_state(&mut self, state: Rc<State>) -> &mut Task {
+        self.state = state;
 
         return self;
     }
 
     /// obtains current [`Task`] task_group.
-    pub fn get_task_group(self) -> u32 {
-        return self.task_group;
+    pub fn get_board(self) -> Weak<Board> {
+        self.board.clone()
     }
 
     /// update current [`Task`] task_group.
-    pub fn set_task_group(&mut self, task_group: u32) -> &mut Task {
-        self.task_group = task_group;
+    pub fn set_board(&mut self, board: Weak<Board>) -> &mut Task {
+        self.board = board;
 
         return self;
     }
 
     /// obtains current [`Task`] started_at.
     pub fn get_started_at(self) -> Option<Rc<String>> {
-        return match self.started_at {
-            Option::Some(date) => Option::Some(date.clone()),
-            Option::None => Option::None,
+        return match &self.started_at {
+            Some(date) => Some(date.clone()),
+            None => None,
         };
     }
 
     /// update current [`Task`] started_at.
     /// if current task already updated it, just ignore 
     pub fn set_started_ed(&mut self, started_et: String) -> &mut Task {
-        if let Option::Some(_) = self.started_at {
+        if let Some(_) = &self.started_at {
             return self;
         }
-        self.started_at = Option::Some(Rc::new(started_et));
+        self.started_at = Some(Rc::new(started_et));
 
         return self;
     }
 
     /// obtains current [`Task`] started_at.
     pub fn get_ended_at(self) -> Option<Rc<String>> {
-        return match self.ended_at {
-            Option::Some(date) => Option::Some(date.clone()),
-            Option::None => Option::None,
+        return match &self.ended_at {
+            Some(date) => Some(date.clone()),
+            None => None,
         };
     }
 
     /// update current [`Task`] ended_at.
     /// if current task already updated it, just ignore. 
     pub fn set_ended_ed(&mut self, ended_at: String) -> &mut Task {
-        if let Option::Some(_) = self.ended_at {
+        if let Some(_) = &self.ended_at {
             return self;
         }
-        self.ended_at = Option::Some(Rc::new(ended_at));
+        self.ended_at = Some(Rc::new(ended_at));
 
         return self;
     }
