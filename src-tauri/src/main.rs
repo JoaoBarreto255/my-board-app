@@ -3,6 +3,8 @@
 
 mod database;
 
+use database::fixtures::create_tables;
+
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -11,6 +13,12 @@ fn greet(name: &str) -> String {
 
 fn main() {
     tauri::Builder::default()
+        .setup(|_app| {
+            create_tables()
+                .expect("Error trying create database!\n:-(");
+
+            return Ok(());
+        })
         .invoke_handler(tauri::generate_handler![greet])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
