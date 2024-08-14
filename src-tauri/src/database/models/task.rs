@@ -3,8 +3,9 @@ use core::option::Option;
 use std::rc::{Rc, Weak};
 use std::fmt::Debug;
 
-use crate::database::models::custom_types::Priority;
-use crate::database::models::group::{State, Board};
+use crate::database::models::Priority;
+use crate::database::models::Board;
+use crate::database::models::State;
 
 pub enum DurationInput {
     Minutes(u32),

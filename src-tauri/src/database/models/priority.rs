@@ -30,7 +30,7 @@ impl Priority {
 
 #[cfg(test)]
 mod priority_tests {
-    use super::*;
+    use super::Priority;
 
     #[test]
     fn test_code() {
