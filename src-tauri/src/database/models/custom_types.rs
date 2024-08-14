@@ -1,6 +1,6 @@
 
 
-#[derive(Debug)]
+#[derive(Debug,PartialEq,Eq)]
 pub enum Priority {
     Low,
     Normal,
@@ -28,33 +28,25 @@ impl Priority {
     }
 }
 
-#[derive(Debug)]
-pub enum Frequence {
-    OneTime,
-    Daily,
-    Weekly,
-    Monthly,
-    Yearly
-}
+#[cfg(test)]
+mod priority_tests {
+    use super::*;
 
-impl Frequence {
-    fn code(self) -> u8 {
-        return match self {
-            Frequence::OneTime => 1,
-            Frequence::Daily => 2,
-            Frequence::Weekly => 3,
-            Frequence::Monthly => 4,
-            Frequence::Yearly => 5,
-        };
+    #[test]
+    fn test_code() {
+        assert_eq!(1, Priority::Low.code());
+        assert_eq!(2, Priority::Normal.code());
+        assert_eq!(3, Priority::High.code());
+        assert_eq!(4, Priority::Now.code());
     }
 
-    fn new(code: u8) -> Frequence {
-        return match code {
-            2 => Frequence::Daily,
-            3 => Frequence::Weekly,
-            4 => Frequence::Monthly,
-            5 => Frequence::Yearly,
-            _ => Frequence::OneTime,
-        };
+    #[test]
+    fn test_new() {
+        assert_eq!(Priority::Low, Priority::new(1));
+        assert_eq!(Priority::Normal, Priority::new(2));
+        assert_eq!(Priority::High, Priority::new(3));
+        assert_eq!(Priority::Now, Priority::new(4));
+        assert_eq!(Priority::Low, Priority::new(5));
+        assert_eq!(Priority::Low, Priority::new(10));
     }
 }

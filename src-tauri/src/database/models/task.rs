@@ -1,14 +1,13 @@
 
 use core::option::Option;
 
-use crate::database::models::custom_types::{Frequence, Priority};
+use crate::database::models::custom_types::Priority;
 
 #[derive(Debug)]
 pub struct Task {
     id: u64,
     name: String,
     description: Option<String>,
-    frequence: Frequence,
     duration: u32,
     progress: u32,
     priority: Priority,
@@ -21,12 +20,12 @@ pub struct Task {
 impl Task {
     fn new(
         id: u64, name: String, description: Option<String>
-        , frequence: Frequence, duration: u32, progress: u32
-        , priority: Priority, state: String, profile: u32
+        , duration: u32, progress: u32, priority: Priority
+        , state: String, profile: u32
     ) -> Task {
         return Task {
-            id, name, description: description, frequence
-            , duration, progress, priority, state, profile
+            id, name, description: description, duration
+            , progress, priority, state, profile
             , started_at: None, ended_at: None
         }
     }
