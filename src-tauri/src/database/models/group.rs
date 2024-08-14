@@ -9,13 +9,13 @@ pub struct State {
     id: Option<u32>,
     name: Rc<String>,
     color: Option<Rc<String>>,
-    is_initial: bool,
+    position: u32,
     board: Weak<Board>
 }
 
 impl State {
-    pub fn new(id: Option<u32>, name: Rc<String>, color: Option<Rc<String>>, board: Weak<Board>, is_initial: bool) -> State {
-        State { id, name, color, is_initial, board }
+    pub fn new(id: Option<u32>, name: Rc<String>, color: Option<Rc<String>>, board: Weak<Board>, position: u32) -> State {
+        State { id, name, color, position, board }
     }
     
     /// Sets the id of this [`State`].
@@ -55,12 +55,13 @@ impl State {
         return self;
     }
 
-    pub fn get_is_initial(&self) -> bool {
-        self.is_initial
+    pub fn get_position(&self) -> u32 {
+        self.position
     }
 
-    pub fn set_is_initial(&mut self, is_initial: bool) -> &mut State {
-        self.is_initial = is_initial;
+    /// Sets new [`State`] position.
+    pub fn set_position(&mut self, position: u32) -> &mut State {
+        self.position = position;
 
         return self;
     }
@@ -84,12 +85,13 @@ pub struct Board {
     name: Rc<String>,
     states: Vec<Rc<State>>,
     tasks: Vec<Rc<Task>>,
+    position: u32,
     group: Weak<Group>,
 }
 
 impl Board {
-    pub fn new(id: Option<u32>, name: Rc<String>, group: Weak<Group>) -> Board {
-        Board{ id, name, states: vec![], tasks: vec![], group }
+    pub fn new(id: Option<u32>, name: Rc<String>, group: Weak<Group>, position: u32) -> Board {
+        Board{ id, name, states: vec![], tasks: vec![], position, group }
     }
 
     pub fn get_id(&self) -> Option<u32> {
@@ -150,6 +152,17 @@ impl Board {
         return self;
     }
 
+    pub fn get_position(&self) -> u32 {
+        self.position
+    }
+
+    /// Sets new [`Board`] position.
+    pub fn set_position(&mut self, position: u32) -> &mut Board {
+        self.position = position;
+
+        return self;
+    }
+
     pub fn get_group(&self) -> Weak<Group> {
         self.group.clone()
     }
@@ -167,12 +180,13 @@ pub struct Group {
     id: Option<u32>,
     name: Rc<String>,
     icon: Option<String>,
+    position: u32,
     boards: Vec<Rc<Board>>
 }
 
 impl Group {
-    pub fn new(id: Option<u32>, name: Rc<String>, icon: Option<String>) -> Group {
-        Group { id, name, icon, boards: vec![] }
+    pub fn new(id: Option<u32>, name: Rc<String>, icon: Option<String>, position: u32) -> Group {
+        Group { id, name, icon, boards: vec![], position }
     }
 
     pub fn get_id(&self) -> Option<u32> {
@@ -207,6 +221,18 @@ impl Group {
     /// Sets the icon of this [`Group`].
     pub fn set_icon(&mut self, icon: Option<String>) -> &mut Group {
         self.icon = icon;
+
+        return self;
+    }
+
+    /// get [`Group`] postion on state
+    pub fn get_position(self) -> u32 {
+        self.position
+    }
+
+    /// Sets new [`Group`] position.
+    pub fn set_position(&mut self, position: u32) -> &mut Group {
+        self.position = position;
 
         return self;
     }

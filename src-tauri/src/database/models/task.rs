@@ -21,6 +21,7 @@ pub struct Task {
     priority: Priority,
     state: Rc<State>,
     board: Weak<Board>,
+    position: u32,
     started_at: Option<Rc<String>>,
     ended_at: Option<Rc<String>>
 }
@@ -29,12 +30,12 @@ impl Task {
     pub fn new(
         id: Option<u64>, name: Rc<String>, description: Option<Rc<String>>
         , duration: u32, priority: Priority, state: Rc<State>
-        , board: Weak<Board>
+        , board: Weak<Board>, position: u32
     ) -> Task {
         return Task {
             id, name, description: description, duration
             , progress: None, priority, state, board
-            , started_at: None, ended_at: None
+            , position, started_at: None, ended_at: None
         }
     }
 
@@ -144,6 +145,18 @@ impl Task {
     /// update current [`Task`] task_group.
     pub fn set_board(&mut self, board: Weak<Board>) -> &mut Task {
         self.board = board;
+
+        return self;
+    }
+
+    /// get [`Task`] postion on state
+    pub fn get_position(self) -> u32 {
+        self.position
+    }
+
+    /// Sets new [`Task`] position.
+    pub fn set_position(&mut self, position: u32) -> &mut Task {
+        self.position = position;
 
         return self;
     }
