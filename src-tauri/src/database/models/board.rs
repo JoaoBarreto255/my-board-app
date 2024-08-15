@@ -1,15 +1,17 @@
 use core::option::Option;
-use std::rc::{Rc, Weak};
 use std::fmt::Debug;
+use std::rc::{Rc, Weak};
 
-use crate::database::models::Task;
-use crate::database::models::State;
+use rusqlite::{params, Connection, Result};
+
 use crate::database::models::Group;
-
+use crate::database::models::ModelQueryBuilder;
+use crate::database::models::State;
+use crate::database::models::Task;
 
 #[derive(Debug)]
 pub struct Board {
-    id: Option<u32>,
+    id: Option<i64>,
     name: Rc<String>,
     states: Vec<Rc<State>>,
     tasks: Vec<Rc<Task>>,
@@ -18,16 +20,23 @@ pub struct Board {
 }
 
 impl Board {
-    pub fn new(id: Option<u32>, name: Rc<String>, group: Weak<Group>, position: u32) -> Board {
-        Board{ id, name, states: vec![], tasks: vec![], position, group }
+    pub fn new(id: Option<i64>, name: Rc<String>, group: Weak<Group>, position: u32) -> Board {
+        Board {
+            id,
+            name,
+            states: vec![],
+            tasks: vec![],
+            position,
+            group,
+        }
     }
 
-    pub fn get_id(&self) -> Option<u32> {
+    pub fn get_id(&self) -> Option<i64> {
         self.id
     }
 
     /// Sets the id of this [`Board`].
-    pub fn set_id(&mut self, id: Option<u32>) -> &mut Board {
+    pub fn set_id(&mut self, id: Option<i64>) -> &mut Board {
         self.id = id;
 
         return self;
@@ -41,7 +50,7 @@ impl Board {
     pub fn set_name(&mut self, name: Rc<String>) -> &mut Board {
         self.name = name;
 
-        return self
+        return self;
     }
 
     pub fn get_states(&self) -> &Vec<Rc<State>> {
@@ -91,8 +100,8 @@ impl Board {
         return self;
     }
 
-    pub fn get_group(&self) -> Weak<Group> {
-        self.group.clone()
+    pub fn get_group(&self) -> Rc<Group> {
+        self.group.upgrade().expect("theres no group!")
     }
 
     /// Sets the group of this [`Board`].
@@ -100,5 +109,54 @@ impl Board {
         self.group = group;
 
         return self;
+    }
+}
+
+impl ModelQueryBuilder for Board {
+    fn insert_query(&self) -> &str {
+        r#"INSERT INTO boards(name, position, group_id) VALUES (?1, ?2, ?3);"#
+    }
+
+    fn update_query(&self) -> &str {
+        r#"UPDATE boards SET name = ?1,position = ?2, group_id = ?3 WHERE id = ?4;"#
+    }
+
+    fn delete_query(&self) -> &str {
+        r#"DELETE FROM boards WHERE id = ?1;"#
+    }
+
+    fn insert(&mut self, conn: &Connection) -> Result<bool> {
+        let group = self.get_group().get_id();
+        conn.execute(
+            self.insert_query(),
+            params![self.get_name(), self.get_position(), group,],
+        )?;
+
+        self.set_id(Some(conn.last_insert_rowid()));
+
+        return Ok(true);
+    }
+
+    fn update(&self, conn: &Connection) -> Result<bool> {
+        let count = conn.execute(
+            self.update_query(),
+            params![
+                self.get_name(),
+                self.get_position(),
+                self.get_group().get_id(),
+                self.get_id().expect("Entity not persisted!"),
+            ],
+        )?;
+
+        Ok(count > 0)
+    }
+
+    fn delete(&self, conn: &Connection) -> Result<bool> {
+        let count = conn.execute(
+            self.delete_query(),
+            params![self.get_id().expect("Entity not persisted")],
+        )?;
+
+        Ok(count > 0)
     }
 }

@@ -1,24 +1,22 @@
-
-
-#[derive(Debug,PartialEq,Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Priority {
     Low,
     Normal,
     High,
-    Now
+    Now,
 }
 
 impl Priority {
-    fn code(self) -> u8 {
+    pub fn code(&self) -> u8 {
         return match self {
             Priority::Low => 1,
             Priority::Normal => 2,
             Priority::High => 3,
-            Priority::Now => 4
+            Priority::Now => 4,
         };
     }
 
-    fn new(code: u8) -> Priority {
+    pub fn new(code: u8) -> Priority {
         return match code {
             2 => Priority::Normal,
             3 => Priority::High,
