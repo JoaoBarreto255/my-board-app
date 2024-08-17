@@ -20,16 +20,12 @@ fn greet(name: &str) -> String {
 #[tauri::command]
 fn create_group(
     name: &str,
-    icon: &str,
+    icon: Option<&str>,
     position: u32,
     state: tauri::State<'_, AppState>,
 ) -> Result<String, String> {
-    let name_str: String = String::from(name);
-    let icon_opt: Option<_> = match icon.len() {
-        0 => None,
-        _ => Some(Rc::new(String::from(icon))),
-    };
-    let mut group: Group = Group::new(Rc::new(name_str), icon_opt, position);
+    let icon: Option<String> = icon.and_then(|v| Some(v.to_string()));
+    let mut group: Group = Group::new(name.to_string(), icon, position);
 
     let result = state
         .database_manager

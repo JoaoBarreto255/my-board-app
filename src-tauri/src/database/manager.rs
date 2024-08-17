@@ -1,5 +1,4 @@
 use rusqlite::{Connection, Result};
-use tauri::async_runtime::Mutex;
 
 use super::models::ModelQueryBuilder;
 
