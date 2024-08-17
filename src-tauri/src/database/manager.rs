@@ -1,4 +1,5 @@
 use rusqlite::{Connection, Result};
+use tauri::async_runtime::Mutex;
 
 use super::models::ModelQueryBuilder;
 
@@ -7,6 +8,11 @@ pub struct Manager {
 }
 
 impl Manager {
+    pub fn new(database: String) -> Result<Self> {
+        let connection = Connection::open(database)?;
+        Ok(Manager { connection })
+    }
+
     /// Manage insert model in DB
     pub fn insert<M: ModelQueryBuilder>(&self, model: &mut M) -> Result<bool> {
         return model.insert(&self.connection);

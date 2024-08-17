@@ -11,15 +11,15 @@ use rusqlite::{params, Connection, Result};
 pub struct Group {
     id: Option<i64>,
     name: Rc<String>,
-    icon: Option<String>,
+    icon: Option<Rc<String>>,
     position: u32,
     boards: Vec<Rc<Board>>,
 }
 
 impl Group {
-    pub fn new(id: Option<i64>, name: Rc<String>, icon: Option<String>, position: u32) -> Group {
+    pub fn new(name: Rc<String>, icon: Option<Rc<String>>, position: u32) -> Group {
         Group {
-            id,
+            id: None,
             name,
             icon,
             boards: vec![],
