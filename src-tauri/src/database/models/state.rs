@@ -10,8 +10,8 @@ use crate::database::models::ModelQueryBuilder;
 #[derive(Debug)]
 pub struct State {
     id: Option<i64>,
-    name: Rc<String>,
-    color: Option<Rc<String>>,
+    name: String,
+    color: Option<String>,
     position: u32,
     board: Weak<Board>,
 }
@@ -19,8 +19,8 @@ pub struct State {
 impl State {
     pub fn new(
         id: Option<i64>,
-        name: Rc<String>,
-        color: Option<Rc<String>>,
+        name: String,
+        color: Option<String>,
         board: Weak<Board>,
         position: u32,
     ) -> State {
@@ -46,27 +46,24 @@ impl State {
     }
 
     /// Get [`State`] name.
-    pub fn get_name(&self) -> Rc<String> {
-        self.name.clone()
+    pub fn get_name(&self) -> &String {
+        &self.name
     }
 
     /// Update [`State`] name.
-    pub fn set_name(&mut self, name: Rc<String>) -> &mut State {
+    pub fn set_name(&mut self, name: String) -> &mut State {
         self.name = name;
 
         return self;
     }
 
     /// Get [`State`] label color if exists.
-    pub fn get_color(&self) -> Option<Rc<String>> {
-        return match &self.color {
-            Some(val) => Some(val.clone()),
-            None => None,
-        };
+    pub fn get_color(&self) -> &Option<String> {
+        &self.color
     }
 
     /// Sets the color of this [`State`].
-    pub fn set_color(&mut self, color: Option<Rc<String>>) -> &mut State {
+    pub fn set_color(&mut self, color: Option<String>) -> &mut State {
         self.color = color;
 
         return self;

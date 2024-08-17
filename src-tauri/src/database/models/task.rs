@@ -33,22 +33,22 @@ impl DurationInput {
 #[derive(Debug)]
 pub struct Task {
     id: Option<i64>,
-    name: Rc<String>,
-    description: Option<Rc<String>>,
+    name: String,
+    description: Option<String>,
     duration: u32,
     progress: Option<f32>,
     priority: Priority,
     state: Rc<State>,
     board: Weak<Board>,
     position: u32,
-    started_at: Option<Rc<String>>,
-    ended_at: Option<Rc<String>>,
+    started_at: Option<String>,
+    ended_at: Option<String>,
 }
 
 impl Task {
     pub fn new(
-        name: Rc<String>,
-        description: Option<Rc<String>>,
+        name: String,
+        description: Option<String>,
         duration: u32,
         priority: Priority,
         state: Rc<State>,
@@ -83,28 +83,25 @@ impl Task {
     }
 
     /// get name from [`Task`]
-    pub fn get_name(&self) -> Rc<String> {
-        self.name.clone()
+    pub fn get_name(&self) -> &String {
+        &self.name
     }
 
     /// Sets the name of this [`Task`].
     pub fn set_name(&mut self, name: String) -> &mut Self {
-        self.name = Rc::new(name);
+        self.name = name;
 
         return self;
     }
 
     /// get description from [`Task`]
-    pub fn get_description(&self) -> Option<Rc<String>> {
-        return match &self.description {
-            Some(description) => Some(description.clone()),
-            _ => None,
-        };
+    pub fn get_description(&self) -> &Option<String> {
+        return &self.description;
     }
 
     /// Sets the descriptio of this [`Task`].
     pub fn set_description(&mut self, description: String) -> &mut Self {
-        self.description = Some(Rc::new(description));
+        self.description = Some(description);
 
         return self;
     }
@@ -188,39 +185,35 @@ impl Task {
     }
 
     /// obtains current [`Task`] started_at.
-    pub fn get_started_at(&self) -> Option<Rc<String>> {
-        return match &self.started_at {
-            Some(date) => Some(date.clone()),
-            None => None,
-        };
+    pub fn get_started_at(&self) -> &Option<String> {
+        return &self.started_at;
     }
 
     /// update current [`Task`] started_at.
     /// if current task already updated it, just ignore
     pub fn set_started_ed(&mut self, started_et: String) -> &mut Self {
-        if let Some(_) = &self.started_at {
+        if self.started_at.is_some() {
             return self;
         }
-        self.started_at = Some(Rc::new(started_et));
+
+        self.started_at = Some(started_et);
 
         return self;
     }
 
     /// obtains current [`Task`] started_at.
-    pub fn get_ended_at(&self) -> Option<Rc<String>> {
-        return match &self.ended_at {
-            Some(date) => Some(date.clone()),
-            None => None,
-        };
+    pub fn get_ended_at(&self) -> &Option<String> {
+        &self.ended_at
     }
 
     /// update current [`Task`] ended_at.
     /// if current task already updated it, just ignore.
     pub fn set_ended_ed(&mut self, ended_at: String) -> &mut Self {
-        if let Some(_) = &self.ended_at {
+        if self.ended_at.is_some() {
             return self;
         }
-        self.ended_at = Some(Rc::new(ended_at));
+
+        self.ended_at = Some(ended_at);
 
         return self;
     }

@@ -10,14 +10,14 @@ use rusqlite::{params, Connection, Result};
 #[derive(Debug)]
 pub struct Group {
     id: Option<i64>,
-    name: Rc<String>,
-    icon: Option<Rc<String>>,
+    name: String,
+    icon: Option<String>,
     position: u32,
     boards: Vec<Rc<Board>>,
 }
 
 impl Group {
-    pub fn new(name: Rc<String>, icon: Option<Rc<String>>, position: u32) -> Group {
+    pub fn new(name: String, icon: Option<String>, position: u32) -> Group {
         Group {
             id: None,
             name,
@@ -33,19 +33,19 @@ impl Group {
     }
 
     /// Sets the id of this [`Group`].
-    pub fn set_id(&mut self, id: Option<i64>) -> &mut Group {
+    pub fn set_id(&mut self, id: Option<i64>) -> &mut Self {
         self.id = id;
 
         return self;
     }
 
     /// Get [`Group`] name.
-    pub fn get_name(&self) -> Rc<String> {
-        self.name.clone()
+    pub fn get_name(&self) -> &String {
+        &self.name
     }
 
     /// Sets the name of this [`Group`].
-    pub fn set_name(&mut self, name: Rc<String>) -> &mut Group {
+    pub fn set_name(&mut self, name: String) -> &mut Self {
         self.name = name;
 
         return self;
@@ -60,7 +60,7 @@ impl Group {
     }
 
     /// Sets the icon of this [`Group`].
-    pub fn set_icon(&mut self, icon: Option<String>) -> &mut Group {
+    pub fn set_icon(&mut self, icon: Option<String>) -> &mut Self {
         self.icon = icon;
 
         return self;
@@ -72,7 +72,7 @@ impl Group {
     }
 
     /// Sets new [`Group`] position.
-    pub fn set_position(&mut self, position: u32) -> &mut Group {
+    pub fn set_position(&mut self, position: u32) -> &mut Self {
         self.position = position;
 
         return self;
@@ -84,14 +84,14 @@ impl Group {
     }
 
     /// Sets the boards of this [`Group`].
-    pub fn set_boards(&mut self, boards: Vec<Rc<Board>>) -> &mut Group {
+    pub fn set_boards(&mut self, boards: Vec<Rc<Board>>) -> &mut Self {
         self.boards = boards;
 
         return self;
     }
 
     /// Add board to stack of boards
-    pub fn add_board(&mut self, board: Rc<Board>) -> &mut Group {
+    pub fn add_board(&mut self, board: Rc<Board>) -> &mut Self {
         self.boards.push(board);
 
         return self;

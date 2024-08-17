@@ -12,7 +12,7 @@ use crate::database::models::Task;
 #[derive(Debug)]
 pub struct Board {
     id: Option<i64>,
-    name: Rc<String>,
+    name: String,
     states: Vec<Rc<State>>,
     tasks: Vec<Rc<Task>>,
     position: u32,
@@ -20,7 +20,7 @@ pub struct Board {
 }
 
 impl Board {
-    pub fn new(id: Option<i64>, name: Rc<String>, group: Weak<Group>, position: u32) -> Board {
+    pub fn new(id: Option<i64>, name: String, group: Weak<Group>, position: u32) -> Board {
         Board {
             id,
             name,
@@ -42,12 +42,12 @@ impl Board {
         return self;
     }
 
-    pub fn get_name(&self) -> Rc<String> {
-        self.name.clone()
+    pub fn get_name(&self) -> &String {
+        &self.name
     }
 
     /// Sets the name of this [`Board`].
-    pub fn set_name(&mut self, name: Rc<String>) -> &mut Board {
+    pub fn set_name(&mut self, name: String) -> &mut Board {
         self.name = name;
 
         return self;
