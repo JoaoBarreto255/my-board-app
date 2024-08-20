@@ -1,3 +1,5 @@
+use serde::{de::Error, Deserialize, Deserializer, Serialize};
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum Priority {
     Low,
@@ -7,7 +9,7 @@ pub enum Priority {
 }
 
 impl Priority {
-    pub fn code(&self) -> u8 {
+    pub fn code(&self) -> i32 {
         return match self {
             Priority::Low => 1,
             Priority::Normal => 2,
@@ -16,13 +18,36 @@ impl Priority {
         };
     }
 
-    pub fn new(code: u8) -> Priority {
+    pub fn new(code: i32) -> Priority {
         return match code {
             2 => Priority::Normal,
             3 => Priority::High,
             4 => Priority::Now,
             _ => Priority::Low,
         };
+    }
+}
+
+impl Serialize for Priority {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer
+    {
+        serializer.serialize_i32(self.code())
+    }
+}
+
+impl<'de> Deserialize<'de> for Priority {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>
+    {
+        let value = i32::deserialize(deserializer)?;
+        if 1 <= value && value < 5 {
+            return Err(Error::custom(format_args!("Error! Value {} must be between 1 and 4.", value)));
+        }
+
+        Ok(Self::new(value))
     }
 }
 

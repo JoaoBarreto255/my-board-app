@@ -1,5 +1,6 @@
 use core::option::Option;
 use std::fmt::Debug;
+use std::result;
 use std::rc::{Rc, Weak};
 
 use crate::database::models::Board;
@@ -7,6 +8,9 @@ use crate::database::models::ModelQueryBuilder;
 use crate::database::models::Priority;
 use crate::database::models::State;
 use rusqlite::{params, Connection, Result};
+use serde::de::{Error, Visitor};
+use serde::ser::SerializeStruct;
+use serde::{Serialize, Deserialize};
 
 pub enum DurationInput {
     Minutes(u32),
@@ -30,6 +34,23 @@ impl DurationInput {
     }
 }
 
+impl Serialize for DurationInput {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    {
+        serializer.serialize_u32(self.value())
+    }   
+}
+
+impl<'de> Deserialize<'de> for DurationInput {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+    {
+        let value = u32::deserialize(deserializer)?;
+        Ok(Self::from(value))
+    }
+}
+
 #[derive(Debug)]
 pub struct Task {
     id: Option<i64>,
@@ -39,10 +60,194 @@ pub struct Task {
     progress: Option<f32>,
     priority: Priority,
     state: Rc<State>,
-    board: Weak<Board>,
+    board: Option<Weak<Board>>,
     position: u32,
     started_at: Option<String>,
     ended_at: Option<String>,
+}
+
+impl Serialize for Task {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error> {
+        let mut task = serializer.serialize_struct("Task", 11)?;
+        task.serialize_field("id", &self.id)?;
+        task.serialize_field("name", &self.name)?;
+        task.serialize_field("description", &self.description)?;
+        task.serialize_field("duration", &self.duration)?;
+        task.serialize_field("progress", &self.progress)?;
+        task.serialize_field("priority", &self.priority)?;
+        task.serialize_field("state_id", &self.state.as_ref().get_id())?;
+        task.serialize_field("position", &self.position)?;
+        task.serialize_field("started_at", &self.started_at)?;
+        task.serialize_field("ended_at", &self.ended_at)?;
+        task.end()
+    }
+}
+
+impl<'a> Deserialize<'a> for Task {
+    fn deserialize<D>(deserializer: D) -> result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'a>,
+    {
+        /// Holds task field names
+        #[derive(Deserialize)]
+        #[serde(field_identifier, rename_all = "snake_case")]
+        enum Field { Id, Name, Description, Duration, Progress, Priority, StateId, Position, StartedAt, EndedAt }
+
+        struct TaskVisitor;
+
+        impl<'b> Visitor<'b> for TaskVisitor {
+            type Value = Task;
+            
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("struct crate::database::models::Task")
+            }
+            
+            fn visit_seq<A>(self, mut seq: A) -> result::Result<Self::Value, A::Error>
+            where
+                A: serde::de::SeqAccess<'b>,
+            {
+                let id = seq.next_element()?.ok_or(Error::invalid_length(0, &self))?;
+                let name = seq.next_element()?.ok_or(Error::invalid_length(0, &self))?;
+                let description = seq.next_element()?.ok_or(Error::invalid_length(0, &self))?;
+                let duration = seq.next_element()?.ok_or(Error::invalid_length(0, &self))?;
+                let progress = seq.next_element()?.ok_or(Error::invalid_length(0, &self))?;
+                let priority = seq.next_element()?.ok_or(Error::invalid_length(0, &self))?;
+                let state_id = seq.next_element()?.ok_or(Error::invalid_length(0, &self))?;
+                let position = seq.next_element()?.ok_or(Error::invalid_length(0, &self))?;
+                let started_at = seq.next_element()?.ok_or(Error::invalid_length(0, &self))?;
+                let ended_at = seq.next_element()?.ok_or(Error::invalid_length(0, &self))?;
+
+                let state = State::new(Some(state_id), "".to_string(), None, None, 0);
+                
+                Ok(Task {
+                    id, name, description, duration, progress, priority,
+                    state: Rc::from(state), board: None, position, started_at, ended_at
+                })
+            }
+            
+            fn visit_map<A>(self, mut map: A) -> result::Result<Self::Value, A::Error>
+            where
+                A: serde::de::MapAccess<'b>,
+            {
+                let mut id = None;
+                let mut name = None;
+                let mut description = None;
+                let mut duration = None;
+                let mut progress = None;
+                let mut priority = None;
+                let mut state_id = None;
+                let mut position = None;
+                let mut started_at = None;
+                let mut ended_at = None;
+
+                while let Some(key) = map.next_key()? { 
+                    match key {
+                        Field::Id => {
+                            if id.is_some() {
+                                return Err(Error::duplicate_field("id"));
+                            }
+
+                            id = Some(map.next_value()?);
+                        }
+                        Field::Name => {
+                            if name.is_some() {
+                                return Err(Error::duplicate_field("name"));
+                            }
+
+                            name = Some(map.next_value()?);
+                        },
+                        Field::Description => {
+                            if description.is_some() {
+                                return Err(Error::duplicate_field("description"));
+                            }
+
+                            description = Some(map.next_value()?);
+                        },
+                        Field::Duration => {
+                            if duration.is_some() {
+                                return Err(Error::duplicate_field("duration"));
+                            }
+
+                            duration = Some(map.next_value()?);
+                        },
+                        Field::Progress => {
+                            if progress.is_some() {
+                                return Err(Error::duplicate_field("progress"));
+                            }
+
+                            progress = Some(map.next_value()?);
+                        },
+                        Field::Priority => {
+                            if priority.is_some() {
+                                return Err(Error::duplicate_field("priority"));
+                            }
+
+                            priority = Some(map.next_value()?);
+                        },
+                        Field::StateId => {
+                            if state_id.is_some() {
+                                return Err(Error::duplicate_field("state_id"));
+                            }
+
+                            state_id = Some(map.next_value()?);
+                        }
+                        Field::Position => {
+                            if position.is_some() {
+                                return Err(Error::duplicate_field("position"));
+                            }
+
+                            position = Some(map.next_value()?);
+                        },
+                        Field::StartedAt => {
+                            if started_at.is_some() {
+                                return Err(Error::duplicate_field("started_at"));
+                            }
+
+                            started_at = Some(map.next_value()?);
+                        },
+                        Field::EndedAt => {
+                            if ended_at.is_some() {
+                                return Err(Error::duplicate_field("ended_at"));
+                            }
+
+                            ended_at = Some(map.next_value()?);
+                        },
+                    }
+                }
+
+
+                let id = id.ok_or(Error::missing_field("id"))?;
+                let name = name.ok_or(Error::missing_field("name"))?;
+                let description = description.ok_or(Error::missing_field("description"))?;
+                let duration = duration.ok_or(Error::missing_field("duration"))?;
+                let progress = progress.ok_or(Error::missing_field("progress"))?;
+                let priority = priority.ok_or(Error::missing_field("priority"))?;
+                let state_id = state_id.ok_or(Error::missing_field("state"))?;
+                let position = position.ok_or(Error::missing_field("position"))?;
+                let started_at = started_at.ok_or(Error::missing_field("started_at"))?;
+                let ended_at = ended_at.ok_or(Error::missing_field("ended_at"))?;
+
+                let state = State::new(Some(state_id), "".to_string(), None,  None, 0);
+
+                Ok(Task {
+                    id, name, description, duration, progress, priority,
+                    state: Rc::from(state), board: None, position, started_at, ended_at
+                }) 
+            }
+        }
+        deserializer.deserialize_struct("Task", &[
+            "id",
+            "name",
+            "description",
+            "duration",
+            "progress",
+            "priority",
+            "state_id",
+            "position",
+            "started_at",
+            "ended_at",
+        ], TaskVisitor)
+    }
 }
 
 impl Task {
@@ -52,7 +257,7 @@ impl Task {
         duration: u32,
         priority: Priority,
         state: Rc<State>,
-        board: Weak<Board>,
+        board: Option<Weak<Board>>,
         position: u32,
     ) -> Task {
         return Task {
@@ -162,12 +367,17 @@ impl Task {
 
     /// obtains current [`Task`] task_group.
     pub fn get_board(&self) -> Option<Rc<Board>> {
-        self.board.upgrade()
+        if let Some(board) = &self.board {
+            let result = board.upgrade()?;
+            return Some(result);
+        }
+
+        return None;
     }
 
     /// update current [`Task`] task_group.
     pub fn set_board(&mut self, board: Weak<Board>) -> &mut Self {
-        self.board = board;
+        self.board = Some(board);
 
         return self;
     }
