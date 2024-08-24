@@ -19,28 +19,19 @@ fn greet(name: &str) -> String {
 
 #[tauri::command]
 fn create_group(
-    name: &str,
-    icon: Option<&str>,
-    position: u32,
-    state: tauri::State<'_, AppState>,
-) -> Result<String, String> {
-    let icon: Option<String> = icon.and_then(|v| Some(v.to_string()));
-    let mut group: Group = Group::new(name.to_string(), icon, position);
-
-    let result = state
-        .database_manager
+    // name: &str,
+    // icon: Option<&str>,
+    // position: u32,
+    mut new_group: Group,
+    app_state: tauri::State<'_, AppState>,
+) -> Result<Group, String> {
+    app_state.database_manager
         .lock()
         .unwrap()
-        .insert(group.borrow_mut());
-
-    if let Ok(val) = result {
-        return match val {
-            true => Ok(String::from("Ok")),
-            false => Err(String::from("Transaction error!")),
-        };
-    }
-
-    Err(String::from("Fail to save data!"))
+        .insert(new_group.borrow_mut())
+        .is_ok()
+        .then_some(new_group)
+        .ok_or(String::from("Transaction error!"))
 }
 
 struct AppState {
