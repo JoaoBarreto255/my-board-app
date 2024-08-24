@@ -6,13 +6,16 @@ use crate::database::models::Board;
 use crate::database::models::ModelQueryBuilder;
 
 use rusqlite::{params, Connection, Result};
+use serde::Deserialize;
+use serde::Serialize;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Group {
     id: Option<i64>,
     name: String,
     icon: Option<String>,
     position: u32,
+    #[serde(skip_deserializing)]
     boards: Vec<Rc<Board>>,
 }
 

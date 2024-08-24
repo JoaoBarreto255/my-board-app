@@ -3,19 +3,23 @@ use std::fmt::Debug;
 use std::rc::{Rc, Weak};
 
 use rusqlite::{params, Connection, Result};
+use serde::{Deserialize, Serialize};
 
 use crate::database::models::Group;
 use crate::database::models::ModelQueryBuilder;
 use crate::database::models::State;
 use crate::database::models::Task;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Board {
     id: Option<i64>,
     name: String,
+    #[serde(skip_deserializing)]
     states: Vec<Rc<State>>,
+    #[serde(skip_deserializing)]
     tasks: Vec<Rc<Task>>,
     position: u32,
+    #[serde(skip)]
     group: Weak<Group>,
 }
 
