@@ -19,9 +19,6 @@ fn greet(name: &str) -> String {
 
 #[tauri::command]
 fn create_group(
-    // name: &str,
-    // icon: Option<&str>,
-    // position: u32,
     mut new_group: Group,
     app_state: tauri::State<'_, AppState>,
 ) -> Result<Group, String> {
@@ -33,6 +30,32 @@ fn create_group(
         .then_some(new_group)
         .ok_or(String::from("Transaction error!"))
 }
+
+#[tauri::command]
+fn update_group(
+    mut group: Group,
+    app_state: tauri::State<'_, AppState>,
+) -> Result<Group, String> {
+    app_state.database_manager
+        .lock()
+        .unwrap()
+        .update(group.borrow())
+        .is_ok()
+        .then_some(group)
+        .ok_or(String::from("Transaction error!"))
+}
+
+// #[tauri::command]
+// fn delete_group(
+//     mut group: Group,
+//     app_state: tauri::State<'_, AppState>,
+// ) -> Result<bool, String> {
+//     app_state.database_manager
+//         .lock()
+//         .unwrap()
+//         .delete(group.borrow())
+//         .and_then(|x| Ok(x))
+// }
 
 struct AppState {
     database_manager: Mutex<Manager>,
