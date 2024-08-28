@@ -1,4 +1,5 @@
 use core::option::Option;
+use std::cell::RefCell;
 use std::fmt::Debug;
 use std::rc::{Rc, Weak};
 
@@ -14,8 +15,7 @@ pub struct State {
     name: String,
     color: Option<String>,
     position: u32,
-    #[serde(skip)]
-    board: Option<Weak<Board>>,
+    board: Option<Weak<RefCell<Board>>>,
 }
 
 impl State {
@@ -23,7 +23,7 @@ impl State {
         id: Option<i64>,
         name: String,
         color: Option<String>,
-        board: Option<Weak<Board>>,
+        board: Option<Weak<RefCell<Board>>>,
         position: u32,
     ) -> State {
         State {
@@ -84,15 +84,15 @@ impl State {
     }
 
     /// Get [`Board`] from [`State`]
-    pub fn get_board(&self) -> Option<Rc<Board>> {
+    pub fn get_board(&self) -> Option<Rc<RefCell<Board>>> {
         match &self.board {
             None => None,
-            Some(board) => Some(board.upgrade().expect("Opss! Missing board data."))
+            Some(board) => Some(board.upgrade().expect("Opss! Missing board data.")),
         }
     }
 
     /// Change [`State`] [`Board`].
-    pub fn set_board(&mut self, board: &Weak<Board>) -> &mut State {
+    pub fn set_board(&mut self, board: &Weak<RefCell<Board>>) -> &mut State {
         self.board = Some(board.clone());
 
         return self;
@@ -111,7 +111,10 @@ impl ModelQueryBuilder for State {
                 self.get_name(),
                 self.get_color(),
                 self.get_position(),
-                self.get_board().expect("Cannot create state without board").get_id(),
+                self.get_board()
+                    .expect("Cannot create state without board")
+                    .borrow()
+                    .get_id(),
             ],
         )?;
         self.set_id(Some(conn.last_insert_rowid()));
