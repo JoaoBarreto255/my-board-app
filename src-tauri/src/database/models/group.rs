@@ -4,6 +4,7 @@ use std::rc::Rc;
 
 use crate::database::models::Board;
 use crate::database::models::ModelQueryBuilder;
+use crate::database::models::Task;
 
 use rusqlite::{params, Connection, Result};
 use serde::Deserialize;
@@ -17,6 +18,8 @@ pub struct Group {
     position: u32,
     #[serde(skip_deserializing)]
     boards: Vec<Rc<Board>>,
+    #[serde(skip_deserializing)]
+    tasks: Vec<Rc<Task>>,
 }
 
 impl Group {
@@ -27,6 +30,7 @@ impl Group {
             icon,
             boards: vec![],
             position,
+            tasks: vec![],
         }
     }
 
@@ -96,6 +100,25 @@ impl Group {
     /// Add board to stack of boards
     pub fn add_board(&mut self, board: Rc<Board>) -> &mut Self {
         self.boards.push(board);
+
+        return self;
+    }
+
+    /// Get [`Task`] boards
+    pub fn get_tasks(&self) -> &Vec<Rc<Task>> {
+        &self.tasks
+    }
+
+    /// Sets the tasks of this [`Task`].
+    pub fn set_tasks(&mut self, tasks: Vec<Rc<Task>>) -> &mut Self {
+        self.tasks = tasks;
+
+        return self;
+    }
+
+    /// Add [`Task`] to stack of Tasks
+    pub fn add_task(&mut self, task: Rc<Task>) -> &mut Self {
+        self.tasks.push(task);
 
         return self;
     }

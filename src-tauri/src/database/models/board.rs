@@ -17,7 +17,7 @@ pub struct Board {
     #[serde(skip_deserializing)]
     states: Vec<Rc<State>>,
     #[serde(skip_deserializing)]
-    tasks: Vec<Rc<Task>>,
+    tasks: Vec<Weak<Task>>,
     position: u32,
     #[serde(skip)]
     group: Weak<Group>,

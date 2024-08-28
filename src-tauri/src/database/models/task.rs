@@ -7,7 +7,7 @@ use crate::database::models::ModelQueryBuilder;
 use crate::database::models::Priority;
 use crate::database::models::State;
 use rusqlite::{params, Connection, Result};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum DurationInput {
@@ -41,8 +41,7 @@ pub struct Task {
     progress: Option<f32>,
     priority: Priority,
     state: Rc<State>,
-    #[serde(skip)]
-    board: Option<Weak<Board>>,
+    board: Option<Rc<Board>>,
     position: u32,
     started_at: Option<String>,
     ended_at: Option<String>,
