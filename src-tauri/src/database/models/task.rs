@@ -54,7 +54,7 @@ impl Task {
         duration: u32,
         priority: Priority,
         state: Rc<State>,
-        board: Option<Weak<Board>>,
+        board: Option<Rc<Board>>,
         position: u32,
     ) -> Task {
         return Task {
@@ -165,7 +165,7 @@ impl Task {
     /// obtains current [`Task`] task_group.
     pub fn get_board(&self) -> Option<Rc<Board>> {
         if let Some(board) = &self.board {
-            let result = board.upgrade()?;
+            let result = board.clone();
             return Some(result);
         }
 
@@ -173,7 +173,7 @@ impl Task {
     }
 
     /// update current [`Task`] task_group.
-    pub fn set_board(&mut self, board: Weak<Board>) -> &mut Self {
+    pub fn set_board(&mut self, board: Rc<Board>) -> &mut Self {
         self.board = Some(board);
 
         return self;

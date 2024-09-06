@@ -75,19 +75,19 @@ impl Board {
         return self;
     }
 
-    pub fn get_tasks(&self) -> &Vec<Rc<Task>> {
+    pub fn get_tasks(&self) -> &Vec<Weak<Task>> {
         &self.tasks
     }
 
     /// Sets the tasks of this [`Board`].
-    pub fn set_tasks(&mut self, tasks: Vec<Rc<Task>>) -> &mut Board {
+    pub fn set_tasks(&mut self, tasks: Vec<Weak<Task>>) -> &mut Board {
         self.tasks = tasks;
 
         return self;
     }
 
     /// Append [`Task`] to stack of [`Board`] tasks.
-    pub fn add_task(&mut self, task: Rc<Task>) -> &mut Board {
+    pub fn add_task(&mut self, task: Weak<Task>) -> &mut Board {
         self.tasks.push(task);
 
         return self;
