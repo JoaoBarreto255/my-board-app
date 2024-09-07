@@ -1,6 +1,6 @@
 use core::option::Option;
 use std::fmt::Debug;
-use std::rc::{Rc, Weak};
+use std::rc::Rc;
 
 use crate::database::models::Board;
 use crate::database::models::ModelQueryBuilder;
